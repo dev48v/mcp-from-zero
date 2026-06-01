@@ -1,0 +1,26 @@
+{
+  "name": "mcp-from-zero",
+  "version": "0.1.0",
+  "description": "Day 40 of TechFromZero — a custom Model Context Protocol server exposing Wikipedia tools",
+  "type": "module",
+  "bin": {
+    "mcp-from-zero": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js"
+  },
+  "files": ["dist"],
+  "keywords": ["mcp", "model-context-protocol", "wikipedia", "claude", "anthropic"],
+  "author": "dev48v",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "~5.6.2"
+  }
+}
