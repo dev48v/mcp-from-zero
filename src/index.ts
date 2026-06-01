@@ -12,7 +12,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod'
-import { search } from './wiki.js'
+import { search, summary } from './wiki.js'
 
 const server = new McpServer({
   name: 'mcp-from-zero',
@@ -38,6 +38,26 @@ server.tool(
     return {
       content: [
         { type: 'text', text: `Found ${hits.length} matches for "${query}":\n\n${lines.join('\n')}` }
+      ]
+    }
+  }
+)
+
+server.tool(
+  'wiki_summary',
+  'Fetch the intro paragraph + metadata for a Wikipedia article by title. Use this after wiki_search picks a candidate title — gives the AI client enough context to answer "what is X?" style questions without pulling the full article body.',
+  {
+    title: z.string().min(1).describe('Exact Wikipedia article title, e.g. "WebAssembly" or "Marie Curie".')
+  },
+  async ({ title }) => {
+    const s = await summary(title)
+    const meta = s.description ? `${s.description}\n\n` : ''
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `# ${s.title}\n\n${meta}${s.extract}\n\nSource: ${s.url}`
+        }
       ]
     }
   }

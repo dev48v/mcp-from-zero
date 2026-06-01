@@ -31,6 +31,38 @@ async function wikiFetch(url: string): Promise<unknown> {
   }
 }
 
+// STEP 4 — REST summary. Returns an article's intro paragraph + thumbnail
+// in one call (~150 ms). The MediaWiki Action API can do this too via
+// prop=extracts&exintro=true but the REST endpoint is one round-trip and
+// already gives us a structured payload — preferable for tool output.
+export interface SummaryResult {
+  title: string
+  description: string
+  extract: string
+  url: string
+  thumbnail?: string
+}
+
+export async function summary(title: string): Promise<SummaryResult> {
+  const u =
+    'https://en.wikipedia.org/api/rest_v1/page/summary/' +
+    encodeURIComponent(title.replace(/ /g, '_'))
+  const data = (await wikiFetch(u)) as {
+    title: string
+    description?: string
+    extract: string
+    content_urls: { desktop: { page: string } }
+    thumbnail?: { source: string }
+  }
+  return {
+    title: data.title,
+    description: data.description ?? '',
+    extract: data.extract,
+    url: data.content_urls.desktop.page,
+    thumbnail: data.thumbnail?.source
+  }
+}
+
 export interface SearchHit {
   title: string
   snippet: string
