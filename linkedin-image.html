@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TechFromZero - Day 40 - MCP Server</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 100vw; height: 100vh;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: #f1f5f9; display: flex; overflow: hidden;
+  }
+  .left { width: 45%; padding: 5% 4%; display: flex; flex-direction: column; justify-content: center; }
+  .series-badge {
+    display: inline-block; background: linear-gradient(90deg, #6d28d9, #7c3aed);
+    color: #fff; font-size: 18px; font-weight: 700; letter-spacing: 3px;
+    padding: 10px 24px; border-radius: 30px; margin-bottom: 28px; width: fit-content;
+  }
+  .day-number {
+    font-size: 120px; font-weight: 900;
+    background: linear-gradient(90deg, #c4b5fd, #8b5cf6);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    line-height: 1; margin-bottom: 12px;
+  }
+  .tech-name { font-size: 56px; font-weight: 700; color: #f8fafc; margin-bottom: 8px; }
+  .project-name { font-size: 24px; color: #94a3b8; margin-bottom: 36px; }
+  .tag-row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .tag {
+    background: rgba(139, 92, 246, 0.12); border: 1px solid rgba(139, 92, 246, 0.3);
+    color: #c4b5fd; font-size: 18px; font-weight: 600; padding: 8px 20px; border-radius: 8px;
+  }
+  .right { flex: 1; padding: 5% 4% 5% 2%; display: flex; flex-direction: column; justify-content: center; }
+  .arch-title { font-size: 20px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #c4b5fd; margin-bottom: 28px; }
+  .arch-flow { display: flex; align-items: center; flex-wrap: nowrap; gap: 0; margin-bottom: 44px; }
+  .arch-box {
+    background: rgba(30, 41, 59, 0.8); border: 1.5px solid rgba(139, 92, 246, 0.3);
+    border-radius: 14px; padding: 14px 16px; text-align: center; min-width: 100px;
+  }
+  .arch-box .label { font-size: 14px; color: #94a3b8; margin-bottom: 6px; }
+  .arch-box .name { font-size: 20px; font-weight: 700; color: #e2e8f0; }
+  .arch-arrow { color: #c4b5fd; font-size: 32px; padding: 0 10px; font-weight: 700; }
+  .steps-title { font-size: 20px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: #c4b5fd; margin-bottom: 20px; }
+  .step-list { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 14px 28px; }
+  .step-list li { font-size: 18px; color: #cbd5e1; display: flex; align-items: center; gap: 12px; }
+  .step-num {
+    background: linear-gradient(135deg, #7c3aed, #a78bfa); color: #fff;
+    font-size: 15px; font-weight: 700; width: 32px; height: 32px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .footer-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 6px; background: linear-gradient(90deg, #6d28d9, #8b5cf6, #6d28d9); }
+  .github-url { position: absolute; bottom: 24px; right: 48px; font-size: 18px; color: #64748b; font-weight: 600; }
+  .beginner-badge {
+    position: absolute; top: 32px; right: 48px;
+    background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3);
+    color: #c4b5fd; font-size: 16px; font-weight: 700; letter-spacing: 2px;
+    text-transform: uppercase; padding: 8px 20px; border-radius: 24px;
+  }
+</style>
+</head>
+<body>
+  <div class="beginner-badge">🎯 Beginner Guide</div>
+  <div class="left">
+    <div class="series-badge">🚀 TechFromZero Series</div>
+    <div class="day-number">DAY 40</div>
+    <div class="tech-name">MCP Server</div>
+    <div class="project-name">Custom Wikipedia tools for Claude Desktop</div>
+    <div class="tag-row">
+      <span class="tag">MCP</span>
+      <span class="tag">Anthropic</span>
+      <span class="tag">TypeScript</span>
+      <span class="tag">Node 22</span>
+    </div>
+  </div>
+  <div class="right">
+    <div class="arch-title">📐 Protocol Flow</div>
+    <div class="arch-flow">
+      <div class="arch-box"><small>Claude</small><br><strong>Desktop</strong></div>
+      <span class="arch-arrow">↔</span>
+      <div class="arch-box"><small>JSON-RPC</small><br><strong>stdio</strong></div>
+      <span class="arch-arrow">↔</span>
+      <div class="arch-box"><small>Your</small><br><strong>Server</strong></div>
+      <span class="arch-arrow">↔</span>
+      <div class="arch-box"><small>HTTPS</small><br><strong>Wikipedia</strong></div>
+    </div>
+    <div class="steps-title">🧱 Built Step by Step</div>
+    <ul class="step-list">
+      <li><span class="step-num">1</span> Node + TS scaffold</li>
+      <li><span class="step-num">2</span> MCP SDK + stdio</li>
+      <li><span class="step-num">3</span> wiki_search tool</li>
+      <li><span class="step-num">4</span> wiki_summary tool</li>
+      <li><span class="step-num">5</span> wiki_extract tool</li>
+      <li><span class="step-num">6</span> wiki://trending resource</li>
+      <li><span class="step-num">7</span> Error + structured outputs</li>
+      <li><span class="step-num">8</span> README + Claude config</li>
+    </ul>
+  </div>
+  <div class="footer-bar"></div>
+  <div class="github-url">🔗 github.com/dev48v/mcp-from-zero</div>
+</body>
+</html>
