@@ -12,7 +12,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod'
-import { search, summary, extract } from './wiki.js'
+import { search, summary, extract, trending } from './wiki.js'
 
 const server = new McpServer({
   name: 'mcp-from-zero',
@@ -82,6 +82,36 @@ server.tool(
           type: 'text',
           text: `# ${r.title}\n\n${r.text}${footer}\n\nSource: ${r.url}`
         }
+      ]
+    }
+  }
+)
+
+// STEP 6 — Expose a resource. Resources are MCP's answer to "static or
+// slowly-changing context the client might want to pull on its own."
+// Unlike tools (the model decides to call them), resources are listed up
+// front and the client can fetch them whenever — without sending a request
+// to the model. Great for things like config, recent activity, glossaries.
+//
+// `wiki://trending` is dynamic but cheap to refresh; resource fetches do
+// not consume model tokens until the client decides to inject the content
+// into the conversation.
+server.resource(
+  'wiki-trending',
+  'wiki://trending',
+  {
+    title: 'Wikipedia trending articles',
+    description: 'Top 20 most-viewed English Wikipedia articles from yesterday.',
+    mimeType: 'text/plain'
+  },
+  async uri => {
+    const items = await trending()
+    const text = items.map(i =>
+      `${i.rank.toString().padStart(2)}. ${i.title}  —  ${i.views.toLocaleString()} views`
+    ).join('\n')
+    return {
+      contents: [
+        { uri: uri.toString(), mimeType: 'text/plain', text }
       ]
     }
   }

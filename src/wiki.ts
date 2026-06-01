@@ -63,6 +63,36 @@ export async function summary(title: string): Promise<SummaryResult> {
   }
 }
 
+// STEP 6 — Trending articles (most-viewed on English Wikipedia for the
+// previous day). Useful as an MCP "resource" — content the server volunteers
+// instead of waiting for a tool call. Resources are great for context the
+// model might want to know about before the user has even asked.
+export interface TrendingArticle {
+  title: string
+  rank: number
+  views: number
+}
+
+export async function trending(): Promise<TrendingArticle[]> {
+  // Yesterday's date in YYYY/MM/DD — Wikipedia takes 12-24h to publish
+  // aggregated counts, so "yesterday" is the freshest stable bucket.
+  const d = new Date(Date.now() - 24 * 60 * 60 * 1000)
+  const yyyy = d.getUTCFullYear()
+  const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
+  const dd = String(d.getUTCDate()).padStart(2, '0')
+  const u = `https://wikimedia.org/api/rest_v1/metrics/pageviews/top/en.wikipedia/all-access/${yyyy}/${mm}/${dd}`
+  const data = (await wikiFetch(u)) as {
+    items: { articles: { article: string; views: number; rank: number }[] }[]
+  }
+  const items = data.items?.[0]?.articles ?? []
+  // Filter out housekeeping pages — "Main_Page", "Special:Search", etc.
+  // are always in the top 20 but useless as suggested reading.
+  return items
+    .filter(a => !a.article.startsWith('Special:') && a.article !== 'Main_Page')
+    .slice(0, 20)
+    .map(a => ({ title: a.article.replace(/_/g, ' '), rank: a.rank, views: a.views }))
+}
+
 // STEP 5 — Full plain-text article body via the Action API.
 //
 // We deliberately use `prop=extracts&explaintext=1` so the response is
