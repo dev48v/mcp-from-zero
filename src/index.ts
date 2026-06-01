@@ -12,7 +12,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod'
-import { search, summary } from './wiki.js'
+import { search, summary, extract } from './wiki.js'
 
 const server = new McpServer({
   name: 'mcp-from-zero',
@@ -57,6 +57,30 @@ server.tool(
         {
           type: 'text',
           text: `# ${s.title}\n\n${meta}${s.extract}\n\nSource: ${s.url}`
+        }
+      ]
+    }
+  }
+)
+
+server.tool(
+  'wiki_extract',
+  'Fetch the full plain-text body of a Wikipedia article (truncated to a character budget). Use this when the user wants the AI to read or summarise a whole article — e.g. "summarise the Wikipedia article on entropy". The output indicates whether the body was truncated.',
+  {
+    title: z.string().min(1).describe('Exact Wikipedia article title.'),
+    max_chars: z.number().int().min(500).max(20_000).default(6000)
+      .describe('Maximum characters to return (500-20000). Larger = more context, slower + more tokens. Default 6000.')
+  },
+  async ({ title, max_chars }) => {
+    const r = await extract(title, max_chars)
+    const footer = r.truncated
+      ? `\n\n[truncated at ${max_chars} chars — call again with a larger max_chars for more]`
+      : ''
+    return {
+      content: [
+        {
+          type: 'text',
+          text: `# ${r.title}\n\n${r.text}${footer}\n\nSource: ${r.url}`
         }
       ]
     }

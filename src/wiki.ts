@@ -63,6 +63,47 @@ export async function summary(title: string): Promise<SummaryResult> {
   }
 }
 
+// STEP 5 — Full plain-text article body via the Action API.
+//
+// We deliberately use `prop=extracts&explaintext=1` so the response is
+// already markdown-friendly (no HTML tags, no infobox cruft). MediaWiki
+// caps individual extract responses at ~10,000 characters but full
+// articles can hit that limit easily; the tool layer in index.ts trims
+// further to fit inside a typical model context.
+export interface ExtractResult {
+  title: string
+  url: string
+  text: string
+  truncated: boolean
+}
+
+export async function extract(title: string, maxChars = 6000): Promise<ExtractResult> {
+  const u = new URL('https://en.wikipedia.org/w/api.php')
+  u.searchParams.set('action', 'query')
+  u.searchParams.set('format', 'json')
+  u.searchParams.set('prop', 'extracts|info')
+  u.searchParams.set('inprop', 'url')
+  u.searchParams.set('explaintext', '1')
+  u.searchParams.set('redirects', '1')
+  u.searchParams.set('titles', title)
+  const data = (await wikiFetch(u.toString())) as {
+    query: { pages: Record<string, { title: string; extract?: string; fullurl?: string; missing?: '' }> }
+  }
+  const page = Object.values(data.query.pages)[0]
+  if (!page || page.missing !== undefined) {
+    throw new Error(`Wikipedia article "${title}" not found`)
+  }
+  const fullText = page.extract ?? ''
+  const truncated = fullText.length > maxChars
+  const text = truncated ? fullText.slice(0, maxChars).trimEnd() + '…' : fullText
+  return {
+    title: page.title,
+    url: page.fullurl ?? `https://en.wikipedia.org/wiki/${encodeURIComponent(title)}`,
+    text,
+    truncated
+  }
+}
+
 export interface SearchHit {
   title: string
   snippet: string
